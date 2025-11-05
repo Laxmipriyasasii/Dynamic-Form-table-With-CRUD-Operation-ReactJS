@@ -1,0 +1,64 @@
+[
+ {
+    "type": "text",
+    "required":"true",
+    "placeholder": "Enter your Name",
+    "max-length":"20",
+    "id":"name",
+    "name":"Name",
+    "textType":"input"
+
+  },
+  {
+   "type": "Number",
+    "required":"true",
+    "placeholder": "Enter your Age",
+    "max-length":"20",
+    "id":"age",
+    "name":"Age",
+    "textType":"input"
+  },
+  {
+    "type": "text",
+    "required":"true",
+    "placeholder": "Enter your Email",
+    "max-length":"20",
+    "id":"email",
+    "name":"Email",
+    "textType":"input"
+  },
+  {
+    "type": "text",
+    "required":"true",
+    "placeholder": "Enter your Number",
+    "max-length":"10",
+    "id":"c-No",
+    "name":"ContactNumber",
+    "textType":"input"
+  },
+  {
+    "type": "text",
+    "required":"true",
+  "options":["Female","Male","Other"],
+    "id":"gender",
+    "name":"Gender",
+    "textType":"select"
+  },
+   {
+    "type": "text",
+    "required":"true",
+    "id":"address",
+    "placeholder":"Enter Your Address",
+    "name":"Address",
+    "textType":"textarea"
+  },
+  {
+    "type": "button",
+    "id":"button",
+    "value":"submit",
+    "class":"button-cl",
+    
+    "textType":"button"
+  }
+    
+]

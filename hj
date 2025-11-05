@@ -1,0 +1,443 @@
+import React, { useState } from "react";
+import data from '../db.json';
+import '../Styles/form.css';
+
+export default function Form() {
+  const [formData, setFormData] = useState({});
+  const [formErrors, setFormErrors] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  function getNextId(data) {
+    const usedIds = data.map(item => item.id);
+    let id = 1;
+    while (usedIds.includes(id)) id++;
+    return id;
+  }
+
+  const validateForm = () => {
+    const errors = {};
+    data.forEach(field => {
+      const val = formData[field.name];
+      if (field.required === "true") {
+        if (field.textType === "checkbox") {
+          if (!val) {
+            errors[field.name] = `${field.name} must be checked`;
+          }
+        } else if (!val || val === "") {
+          errors[field.name] = `${field.name} is required`;
+        } else {
+          if (field.type === "email") {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(val)) {
+              errors[field.name] = "Invalid email address";
+            }
+          }
+          if (field.type === "number") {
+            if (isNaN(val)) {
+              errors[field.name] = `${field.name} must be a number`;
+            }
+          }
+        }
+      }
+    });
+    console.log("Validation errors:", errors);
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return; 
+    }
+
+    const formentry = JSON.parse(localStorage.getItem('AllFormData')) || [];
+    formData.id = getNextId(formentry);
+
+    const updatedform = [...formentry, formData];
+    localStorage.setItem('AllFormData', JSON.stringify(updatedform));
+
+    setFormData({});
+    setFormErrors({});
+  };
+
+  return (
+    <div className="container form-container">
+      <form onSubmit={handleSubmit} className="mt-4" noValidate>
+        <div className="row">
+          {data.map((field, index) => (
+            <div
+              className={`col-12 col-sm-12 col-md-${
+                field.textType === "textarea" || field.textType === "button" ? 12 : 6
+              }`}
+              key={index}
+            >
+              <div className="mb-3">
+                <label htmlFor={field.name} className="form-label cs-label">
+                  {field.name}
+                  {field.required === "true" && <span style={{ color: "red" }}>*</span>}
+                </label>
+
+                {(() => {
+                  switch (field.textType) {
+                    case "textarea":
+                      return (
+                        <>
+                          <textarea
+                            required={field.required === "true"}
+                            className="form-control borderr"
+                            value={formData[field.name] || ""}
+                            placeholder="Leave a comment here"
+                            id={field.id}
+                            name={field.name}
+                            onChange={handleChange}
+                          />
+                          {formErrors[field.name] && (
+                            <div style={{ color: "red", fontSize: "0.8em" }}>
+                              {formErrors[field.name]}
+                            </div>
+                          )}
+                        </>
+                      );
+                    case "select":
+                      return (
+                        <>
+                          <select
+                            id={field.id}
+                            name={field.name}
+                            className="form-select borderr"
+                            value={formData[field.name] || ""}
+                            onChange={handleChange}
+                            required={field.required === "true"}
+                          >
+                            <option value="">--Select--</option>
+                            {field.options.map((opt, idx) => (
+                              <option key={idx} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                          {formErrors[field.name] && (
+                            <div style={{ color: "red", fontSize: "0.8em" }}>
+                              {formErrors[field.name]}
+                            </div>
+                          )}
+                        </>
+                      );
+                    case "checkbox":
+                      return (
+                        <>
+                          <div className="form-check">
+                            <input
+                              className="form-check-input borderr"
+                              type="checkbox"
+                              id={field.id}
+                              name={field.name}
+                              onChange={handleChange}
+                              checked={!!formData[field.name]}
+                              required={field.required === "true"}
+                            />
+                            <label className="form-check-label" htmlFor={field.id}>
+                              {field.desc}
+                            </label>
+                          </div>
+                          {formErrors[field.name] && (
+                            <div style={{ color: "red", fontSize: "0.8em" }}>
+                              {formErrors[field.name]}
+                            </div>
+                          )}
+                        </>
+                      );
+                    case "button":
+                      return (
+                        <div>
+                          <button className={`btn btn-primary ${field.class}`}>
+                            submit
+                          </button>
+                        </div>
+                      );
+                    default:
+                      return (
+                        <>
+                          <input
+                            type={field.type}
+                            className="form-control borderr"
+                            name={field.name}
+                            id={field.id}
+                            placeholder={field.placeholder}
+                            required={field.required === "true"}
+                            onChange={handleChange}
+                            value={formData[field.name] || ""}
+                          />
+                          {formErrors[field.name] && (
+                            <div style={{ color: "red", fontSize: "0.8em" }}>
+                              {formErrors[field.name]}
+                            </div>
+                          )}
+                        </>
+                      );
+                  }
+                })()}
+              </div>
+            </div>
+          ))}
+        </div>
+      </form>
+    </div>
+  );
+}
+{//
+  import React, { useState } from "react";
+import data from '../db.json';
+import '../Styles/form.css';
+import Table from "./Table";
+
+export default function Form() {
+    const [formErrors, setFormErrors] = useState({});
+    const [formData, setFormData] = useState({});
+
+
+    const handleChange = (e) => {
+        const { name, type, value, checked } = e.target;
+        setFormData({ ...formData, [name]: type === "checkbox" ? checked : value, });
+    };
+    function getNextId(data) {
+        const usedIds = data.map(item => item.id);
+        let id = 1;
+        while (usedIds.includes(id)) {
+            id++;
+        }
+        return id;
+    }
+    const validateForm = () => {
+        const errors = {};
+        data.forEach(field => {
+            const val = formData[field.name];
+            if (field.required === "true") {
+                if (field.textType === "checkbox") {
+                    if (!val) {
+                        errors[field.name] = `${field.name} must be checked`;
+                    }
+                } else if (!val || val === "") {
+                    errors[field.name] = `${field.name} is required`;
+                } else {
+                    if (field.type === "email") {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(val)) {
+                            errors[field.name] = "Invalid email address";
+                        }
+                    }
+                    if (field.type === "number") {
+                        if (isNaN(val)) {
+                            errors[field.name] = `${field.name} must be a number`;
+                        }
+                    }
+                }
+            }
+        });
+        console.log("Validation errors:", errors);
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
+
+        const formentry = JSON.parse(localStorage.getItem('AllFormData')) || [];
+        formData.id = getNextId(formentry);
+
+        const updatedform = [...formentry, formData]
+        localStorage.setItem('AllFormData', JSON.stringify(updatedform))
+
+        setFormData({});
+        setFormErrors({});
+
+
+
+
+    };
+
+    return (
+        <>
+
+            <div className="container form-container">
+                <form onSubmit={handleSubmit} className="mt-4">
+                    <div className="row">
+                        {data.map((field, index) => (
+
+                            <>
+                                <div className={`col-12 col-sm-12 col-md-${(field.textType === "textarea" || field.textType === "button") ? 12 : 6}`
+                                } key={index}>
+                                    <div class="mb-3">
+                                        <label htmlFor={field.name} className="form-label cs-label">
+                                            {field.name}
+                                            {field.required === "true" && <span style={{ color: "red" }}>*</span>}
+                                        </label>
+                                        {(() => {
+                                            switch (field.textType) {
+                                                case "textarea":
+                                                    return (
+                                                        <>
+                                                            <textarea
+                                                                required={field.required === "true"}
+                                                                className="form-control borderr"
+                                                                value={formData[field.name] || ""}
+                                                                placeholder="Leave a comment here"
+                                                                id={field.id}
+                                                                name={field.name}
+                                                                onChange={handleChange}
+                                                            />
+                                                            {formErrors[field.name] && (
+                                                                <div style={{ color: "red", fontSize: "0.8em" }}>
+                                                                    {formErrors[field.name]}
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    );
+                                                case "select":
+                                                    return (
+                                                        <>
+                                                            <select
+                                                                id={field.id}
+                                                                name={field.name}
+                                                                className="form-select borderr"
+                                                                value={formData[field.name] || ""}
+                                                                onChange={handleChange}
+                                                                required={field.required === "true"}
+                                                            >
+                                                                <option value="">--Select--</option>
+                                                                {field.options.map((opt, idx) => (
+                                                                    <option key={idx} value={opt}>
+                                                                        {opt}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            {formErrors[field.name] && (
+                                                                <div style={{ color: "red", fontSize: "0.8em" }}>
+                                                                    {formErrors[field.name]}
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    );
+                                                case "checkbox":
+                                                    return (
+                                                        <>
+                                                            <div className="form-check">
+                                                                <input
+                                                                    className="form-check-input borderr"
+                                                                    type="checkbox"
+                                                                    id={field.id}
+                                                                    name={field.name}
+                                                                    onChange={handleChange}
+                                                                    checked={!!formData[field.name]}
+                                                                    required={field.required === "true"}
+                                                                />
+                                                                <label className="form-check-label" htmlFor={field.id}>
+                                                                    {field.desc}
+                                                                </label>
+                                                            </div>
+                                                            {formErrors[field.name] && (
+                                                                <div style={{ color: "red", fontSize: "0.8em" }}>
+                                                                    {formErrors[field.name]}
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    );
+                                                case "button":
+                                                    return (
+                                                        <div>
+                                                            <button className={`btn btn-primary ${field.class}`}>
+                                                                submit
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                default:
+                                                    return (
+                                                        <>
+                                                            <input
+                                                                type={field.type}
+                                                                className="form-control borderr"
+                                                                name={field.name}
+                                                                id={field.id}
+                                                                placeholder={field.placeholder}
+                                                                required={field.required === "true"}
+                                                                onChange={handleChange}
+                                                                value={formData[field.name] || ""}
+                                                            />
+                                                            {formErrors[field.name] && (
+                                                                <div style={{ color: "red", fontSize: "0.8em" }}>
+                                                                    {formErrors[field.name]}
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    );
+                                            }
+                                        })()}
+
+                                    </div>
+                                </div>
+                            </>
+                        ))
+
+
+                        }
+                    </div>
+
+
+                </form>
+            </div>
+
+
+        </>
+    );
+}
+//inputs using ternary operator
+
+//    {data.textType === "textarea" ? (
+//                                             <textarea required={data.required} class="form-control borderr"
+//                                                 value={formData[data.name] || ""}
+//                                                 placeholder="Leave a comment here"
+//                                                 id={data.id}
+//                                                 name={data.name}
+//                                                 onChange={handleChange}></textarea>
+//                                         ) : data.textType === "select" ? (
+//                                             <select id={data.id} name={data.name} class="form-select borderr"
+//                                                 value={formData[data.name] || ""}
+//                                                 onChange={handleChange} required={data.required}>
+//                                                 <option value="">--Select--</option>
+//                                                 {data.options.map((opt, index) => (
+//                                                     <><option key={index} value={opt}>{opt}</option></>
+//                                                 ))
+//                                                 }
+//                                             </select>
+//                                         ) : data.textType === "checkbox" ? (
+//                                             <div class="form-check">
+//                                                 <input class="form-check-input borderr" type={data.textType}
+//                                                     onChange={handleChange} required={data.required} />
+//                                                 <label class="form-check-label" for="data.name">
+//                                                     {data.desc}
+//                                                 </label>
+//                                             </div>
+//                                         )
+//                                             :
+//                                             (
+//                                                 <input type={data.type} class="form-control borderr"
+//                                                     name={data.name} id={data.id} placeholder={data.placeholder}
+//                                                     required={data.required} onChange={handleChange} value={formData[data.name] || ""} />)}
+
+
+}
